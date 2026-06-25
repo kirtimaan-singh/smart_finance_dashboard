@@ -205,17 +205,22 @@ if check_password():
         st.markdown('<p class="neon-title">Data Pipeline</p>', unsafe_allow_html=True)
         st.markdown('<p class="sub-title">Feed structured financial telemetry into Finto relational databases</p>', unsafe_allow_html=True)
         
-        uploaded_file = st.file_uploader("Drop financial transaction sheets (.csv format)", type=["csv"])
+        # AB ISME CSV AUR XLSX DONO ALLOWED HAIN!
+        uploaded_file = st.file_uploader("Drop financial transaction sheets (.csv or .xlsx format)", type=["csv", "xlsx"])
         
         if uploaded_file is not None:
-            uploaded_df = pd.read_csv(uploaded_file)
+            # Agar file Excel hai toh excel parser chalega, nahi toh csv
+            if uploaded_file.name.endswith('.xlsx'):
+                uploaded_df = pd.read_excel(uploaded_file)
+            else:
+                uploaded_df = pd.read_csv(uploaded_file)
+                
             st.markdown("### 📋 Telemetry Preview (Top 10 Records)")
             st.dataframe(uploaded_df.head(10), use_container_width=True)
             if st.button("🚀 Push to Central SQLite Cluster", use_container_width=True):
                 save_dataframe_to_db(uploaded_df)
                 st.balloons()
                 st.success("Data successfully standard-indexed and structured in local DB registers!")
-
     # --- 3. CONTROL CENTER ---
     elif menu == "Control Center":
         st.markdown('<p class="neon-title">Control Center</p>', unsafe_allow_html=True)
