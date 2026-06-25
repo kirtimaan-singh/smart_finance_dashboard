@@ -1,0 +1,6 @@
+venv/
+*.pyc
+.stfolder/
+data/
+sample_financial_data.csv
+.streamlit/secrets.toml
