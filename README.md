@@ -1,4 +1,4 @@
-# Smart Business Finance Analytics Dashboard
+# Finto
 
 An interactive dashboard designed for small businesses to track KPIs, visualize metrics, and get automatic financial recommendations.
 
