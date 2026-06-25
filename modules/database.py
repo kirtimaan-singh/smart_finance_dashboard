@@ -25,38 +25,30 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
-
 def save_dataframe_to_db(df):
+    """Saves or appends clean DataFrame records into SQLite with column filtering."""
     conn = sqlite3.connect(DB_PATH)
+    
+    # 1. Sabhi columns ke extra spaces hatayein (Agar Excel se blank space aa gayi ho)
+    df.columns = df.columns.str.strip()
+    
+    # 2. Database schema ke hisaab se columns ko rename karein
     clean_df = df.rename(columns={
         'Marketing Expense': 'Marketing_Expense',
         'Salary Expense': 'Salary_Expense',
         'Operational Expense': 'Operational_Expense'
     })
-    clean_df.to_sql("financial_records", conn, if_exists="append", index=False)
+    
+    # 3. Sirf wahi columns select karein jo SQL database schema mein hain
+    # Isse agar Excel mein koi extra blank column hoga toh woh automatic delete ho jayega
+    allowed_columns = [
+        'Date', 'Revenue', 'Expenses', 'Marketing_Expense', 
+        'Salary_Expense', 'Operational_Expense', 'Profit', 'Region'
+    ]
+    
+    # Sirf allowed columns ko filter kar ke nikaalein
+    final_df = clean_df[[col for col in allowed_columns if col in clean_df.columns]]
+    
+    # 4. Database mein insert karein
+    final_df.to_sql("financial_records", conn, if_exists="append", index=False)
     conn.close()
-
-def load_data_from_db():
-    if not os.path.exists(DB_PATH):
-        return pd.DataFrame()
-    conn = sqlite3.connect(DB_PATH)
-    try:
-        df = pd.read_sql_query("SELECT * FROM financial_records", conn)
-        if not df.empty:
-            df = df.rename(columns={
-                'Marketing_Expense': 'Marketing Expense',
-                'Salary_Expense': 'Salary Expense',
-                'Operational_Expense': 'Operational Expense'
-            })
-        return df
-    except Exception:
-        return pd.DataFrame()
-    finally:
-        conn.close()
-
-def clear_database():
-    if os.path.exists(DB_PATH):
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("DELETE FROM financial_records")
-        conn.commit()
-        conn.close()
